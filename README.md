@@ -17,3 +17,6 @@ A fox can randomly pop up (with a probability of 0.01) in the field in a tile cl
 
 Note : What makes the chad raccoon even rarer than at first glance is that it needs one of it's "parents" to die of 
 overcrowding for it to survive the first day. If not, it would be surrounded by 3 other raccoons and die.
+
+The "the ecosystem is stable" part could be improved but it's there only to prevent the code to repeat over and over just waiting 
+for a fox to destroy the structure of raccoons.
