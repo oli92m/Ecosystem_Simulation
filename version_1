@@ -1,0 +1,118 @@
+import random
+import copy
+  
+
+FIELD_SIZE = 10
+DAYS = 100
+ecosystem = [[random.randrange(0, 2) for _ in range(FIELD_SIZE)] for _ in range(FIELD_SIZE)]
+
+
+def getNeighbors(board, i, j):
+    m = len(board)
+    n = len(board[0])
+    neighbors = [
+        (board[i - 1][j] if i > 0 else 0),
+        (board[i - 1][j - 1] if i > 0 and j > 0 else 0),
+        (board[i - 1][j + 1] if i > 0 and j < n - 1 else 0),
+        (board[i + 1][j] if i < m - 1 else 0),
+        (board[i + 1][j - 1] if i < m - 1 and j > 0 else 0),
+        (board[i + 1][j + 1] if i < m - 1 and j < n - 1 else 0),
+        (board[i][j - 1] if j > 0 else 0),
+        (board[i][j + 1] if j < n - 1 else 0)
+    ]
+    number_of_neighbors = 0
+    number_of_foxes = 0
+    for neighbor in neighbors:
+        if neighbor != 0:
+            number_of_neighbors += 1
+        if neighbor == 3:
+            number_of_foxes += 1
+
+    return number_of_neighbors, number_of_foxes
+
+
+def gameOfLife(board):
+    m = len(board)
+    n = len(board[0])
+    newborns_possible = [1 for _ in range(19)] + [2]
+    probability_of_a_fox = [0 for _ in range(99)] + [3]
+    points = []
+
+    for i in range(m):
+        for j in range(n):
+            neighbors, foxes = getNeighbors(board, i, j)
+            if neighbors > 3 or foxes > 0:
+                points.append((i, j, 0))
+            elif neighbors == 0:
+                if board[i][j] != 0:
+                    points.append((i, j, 0))
+                elif board[i][j] == 0:
+                    possible_fox = random.choice(probability_of_a_fox)
+                    points.append((i, j, possible_fox))
+            elif neighbors == 1:
+                if board[i][j] == 1:
+                    points.append((i, j, 0))
+                elif board[i][j] == 0:
+                    possible_fox = random.choice(probability_of_a_fox)
+                    points.append((i, j, possible_fox))
+            elif neighbors == 3:
+                if board[i][j] == 2:
+                    points.append((i, j, 0))
+                elif board[i][j] == 0:
+                    newborn = random.choice(newborns_possible)
+                    points.append((i, j, newborn))
+
+    for (i, j, val) in points:
+        board[i][j] = val
+
+
+def population(ecosystem):
+    raccoon_population = 0
+    foxes_population = 0
+    for i in range(FIELD_SIZE):
+        for j in range(FIELD_SIZE):
+            if ecosystem[i][j] == 1 or ecosystem[i][j] == 2:
+                raccoon_population += 1
+            if ecosystem[i][j] == 3:
+                foxes_population += 1
+    return raccoon_population, foxes_population
+
+
+def show(ecosystem):
+    for k in range(len(ecosystem)):
+        print(''.join([str(cell) + '  ' for cell in ecosystem[k]]))
+
+
+def main():
+    original_raccoon_population, original_foxes_population = population(ecosystem)
+
+    print('Day 1:', original_raccoon_population, 'raccoons, ', original_foxes_population, 'foxes')
+    show(ecosystem)
+    print('')
+
+    for i in range(2, DAYS + 1):
+        previous_ecosystem = copy.deepcopy(ecosystem)
+        gameOfLife(ecosystem)
+        current_raccoon_population, current_foxes_population = population(ecosystem)
+
+        print('Day', str(i) + ':', current_raccoon_population, 'raccoon' + 's' * (current_raccoon_population > 1) + ',',
+              current_foxes_population, 'fox' + 'es' * (current_foxes_population > 1))
+        show(ecosystem)
+
+        if ecosystem == [[0 for _ in range(FIELD_SIZE)] for _ in range(FIELD_SIZE)]:
+            print('The population is dead.')
+            print('')
+            break
+        elif previous_ecosystem == ecosystem:
+            print('The ecosystem is stable.')
+            print('')
+            break
+
+        print('')
+
+    print('The population started with', original_raccoon_population,
+          'raccoon' + 's' * (original_raccoon_population > 1), 'and ended with', str(current_raccoon_population) + '.')
+
+
+main()
+
