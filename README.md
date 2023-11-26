@@ -6,7 +6,7 @@ and foxes in a square field.
 
 There are three differents animals in the simulation: two types of raccoon and the fox.
 - the "normal" raccoon needs 2 or 3 friends to stay alive but dies with less than 2 or more than 3.
-- the "chad" raccoon only needs 1 or 2 friends but will die if alone or surrounded by 3 or more raccoons.
+- the "alpha" raccoon only needs 1 or 2 friends but will die if alone or surrounded by 3 or more raccoons.
 - the fox is the predator of the raccoons. The fox eats a nearby raccoon. It goes away if alone (it can't field itself)
   or is surrounded by 2 or more raccoons.
 A normal raccoon is represented by a 1, a chad raccoon by a 2 and a fox by a 3.
