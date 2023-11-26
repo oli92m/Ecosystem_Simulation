@@ -1,1 +1,183 @@
-# Currently working on some changes in Version 2.0 
+import random
+
+FIELD_SIZE = 5
+DAYS = 100
+INITIAL_REPARTITION = [0, 0, 0, 0, 1, 1, 1, 2]
+
+ecosystem = [[random.choice(INITIAL_REPARTITION) for _ in range(FIELD_SIZE)] for _ in range(FIELD_SIZE)]
+
+while sum(ecosystem[i].count(1) + ecosystem[i].count(2) for i in range(FIELD_SIZE)) == 0:
+    ecosystem = [[random.choice(INITIAL_REPARTITION) for _ in range(FIELD_SIZE)] for _ in range(FIELD_SIZE)]
+
+
+def show(ecosystem):
+    for k in range(FIELD_SIZE):
+        print(''.join([str(cell) + '  ' for cell in ecosystem[k]]))
+    print('')
+
+
+def ecosystem_population(ecosystem):
+    raccoons_population = 0
+    foxes_population = 0
+    dead_raccoons_population = 0
+
+    for i in range(FIELD_SIZE):
+        for j in range(FIELD_SIZE):
+            if ecosystem[i][j] == 1:
+                raccoons_population += 1
+            elif ecosystem[i][j] == 2:
+                foxes_population += 1
+            elif ecosystem[i][j] == -1:
+                dead_raccoons_population += 1
+
+    return raccoons_population, foxes_population, dead_raccoons_population
+
+
+def getNeighbors(board, i, j):
+    m = n = FIELD_SIZE
+    neighbors = [
+        (board[i - 1][j] if i > 0 else None),
+        (board[i - 1][j - 1] if i > 0 and j > 0 else None),
+        (board[i - 1][j + 1] if i > 0 and j < n - 1 else None),
+        (board[i + 1][j] if i < m - 1 else None),
+        (board[i + 1][j - 1] if i < m - 1 and j > 0 else None),
+        (board[i + 1][j + 1] if i < m - 1 and j < n - 1 else None),
+        (board[i][j - 1] if j > 0 else None),
+        (board[i][j + 1] if j < n - 1 else None)
+    ]
+    number_of_raccoons = 0
+    number_of_foxes = 0
+    number_of_dead_raccoons = 0
+
+    for neighbor in neighbors:
+        if neighbor == 1:
+            number_of_raccoons += 1
+        elif neighbor == 2:
+            number_of_foxes += 1
+        elif neighbor == -1:
+            number_of_dead_raccoons += 1
+
+    return number_of_raccoons, number_of_foxes, number_of_dead_raccoons
+
+
+def foxes_eating(board):
+    points = []
+    raccoons_dead = []
+
+    for i in range(FIELD_SIZE):
+        for j in range(FIELD_SIZE):
+            number_of_raccoons, number_of_foxes, number_of_dead_raccoons = getNeighbors(board, i, j)
+            if board[i][j] == 1:
+                survival_probability = [0 for _ in range(2 ** number_of_foxes - 1)] + [1]
+                survival = random.choice(survival_probability)
+                if survival == 0:
+                    raccoons_dead.append([i, j])
+                    survival = -1
+                points.append((i, j, survival))
+
+    for (i, j, survival) in points:
+        board[i][j] = survival
+
+    return raccoons_dead
+
+
+def foxes_death(board):
+    foxes_dead = []
+
+    for i in range(FIELD_SIZE):
+        for j in range(FIELD_SIZE):
+            if board[i][j] == 2:
+                number_of_raccoons, number_of_foxes, number_of_dead_raccoons = getNeighbors(board, i, j)
+                if number_of_dead_raccoons == 0:
+                    foxes_dead.append([i, j])
+
+    for [i, j] in foxes_dead:
+        board[i][j] = -2
+
+    return board
+
+
+def foxes_reproduction(board):
+    coordinates = []
+
+    for i in range(FIELD_SIZE):
+        for j in range(FIELD_SIZE):
+            if board[i][j] == 0:
+                number_of_raccoons, number_of_foxes, number_of_dead_raccoons = getNeighbors(board, i, j)
+                if number_of_dead_raccoons > 0 and number_of_foxes > 0:
+                    coordinates.append([i, j])
+
+    raccoons_population, foxes_population, number_of_dead_raccoons = ecosystem_population(ecosystem)
+    number_of_newborns_foxes = 0
+
+    if foxes_population == 1:
+        number_of_newborns_foxes = 1
+    elif foxes_population > 1:
+        number_of_newborns_foxes = foxes_population // 2
+    if number_of_dead_raccoons != 0:
+        for k in range(number_of_newborns_foxes):
+            if len(coordinates) == 0:
+                break
+            newborn_fox = random.choice(coordinates)
+            board[newborn_fox[0]][newborn_fox[1]] = 2
+            coordinates.remove(newborn_fox)
+
+    return board
+
+
+def raccoons_reproduction_or_death(board):
+    all_raccons_born = []
+    raccons_surrounded = []
+
+    for i in range(FIELD_SIZE):
+        for j in range(FIELD_SIZE):
+            if board[i][j] == 0:
+                number_of_raccoons, number_of_foxes, number_of_dead_raccoons = getNeighbors(board, i, j)
+                if number_of_raccoons > 1:
+                    all_raccons_born.append([i, j])
+            elif board[i][j] == 1:
+                number_of_raccoons, number_of_foxes, number_of_dead_raccoons = getNeighbors(board, i, j)
+                if number_of_raccoons > 4:
+                    raccons_surrounded.append([i, j])
+
+    for [i, j] in all_raccons_born:
+        board[i][j] = 1
+    for [i, j] in raccons_surrounded:
+        board[i][j] = 0
+
+    return board
+
+
+def clear_dead_raccoons(board):
+    for i in range(FIELD_SIZE):
+        for j in range(FIELD_SIZE):
+            if board[i][j] == -1 or board[i][j] == -2:
+                board[i][j] = 0
+    return board
+
+
+def game_of_life_v2(ecosystem):
+    foxes_eating(ecosystem)
+    foxes_death(ecosystem)
+    foxes_reproduction(ecosystem)
+    raccoons_reproduction_or_death(ecosystem)
+    clear_dead_raccoons(ecosystem)
+
+
+def main(ecosystem):
+    for day in range(DAYS):
+        print('day', day + 1)
+        game_of_life_v2(ecosystem)
+        show(ecosystem)
+        raccoons_population, foxes_population, dead_raccoons_population = ecosystem_population(ecosystem)
+        if raccoons_population == 0 and foxes_population > 0:
+            print('The foxes have eaten all the raccoons.')
+            break
+        if raccoons_population > 0 and foxes_population == 0:
+            print('The raccoons have escaped the foxes.')
+            break
+        if raccons_population == 0 and foxes_population == 0:
+            print('The two species ended at the same time.')
+
+
+main(ecosystem)
