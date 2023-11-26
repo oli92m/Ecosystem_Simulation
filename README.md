@@ -20,3 +20,6 @@ overcrowding for it to survive the first day. If not, it would be surrounded by 
 
 The "the ecosystem is stable" part could be improved but it's there only to prevent the code to repeat over and over just waiting 
 for a fox to destroy the structure of raccoons.
+
+
+In the 2.0 version and 2.5, the foxes are now a proper species. The can reproduce, hunt, etc... I've removed the "alpha" raccoon to simplify the code. I think I'm going to bring it back in the V3. The 2.5 version generates a large number of simulation to see wich of the two species comes out on top. Feel free to change the different variables to see the outcome!
